@@ -17,8 +17,6 @@ private:
 };
 
 
-class P_Sprite : public Prefab<C_Transform, C_Sprite> {
-
-};
+class P_Sprite : public Prefab<C_Transform, C_Sprite> {};
 
 AIR_NAMESPACE_END

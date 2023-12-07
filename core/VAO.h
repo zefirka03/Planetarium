@@ -13,7 +13,8 @@ public:
 	
 	void bind();
 	void unbind();
-	VBO& pushVBO(GLuint index, GLuint size, GLsizei stride);
+	VBO& pushVBO(GLuint vboIndex, GLuint vaoIndex, GLuint size, GLsizei stride, GLsizei offset = 0);
+	VBO& get_VBO(GLuint vboIndex);
 private:
 	std::unordered_map<size_t, VBO> m_vbo;
 	GLuint m_vao;

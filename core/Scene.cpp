@@ -3,20 +3,20 @@
 AIR_NAMESPACE_BEGIN
 
 SceneBase::~SceneBase() {
-    for (System* system : m_systems)
-        delete system;
+    for (auto system : m_systems)
+        delete system.second;
 }
 
 
 void SceneBase::_update_systems() {
-	for (System* system : m_systems)
-		system->update();
+	for (auto system : m_systems)
+		system.second->update();
 }
 
 
 void SceneBase::_start_systems() {
-	for (System* system : m_systems)
-		system->start();
+	for (auto system : m_systems)
+		system.second->start();
 }
 
 AIR_NAMESPACE_END

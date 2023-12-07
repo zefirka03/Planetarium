@@ -21,14 +21,18 @@ void VAO::unbind() {
 /*
 	size - dimentions (2d = 2, 3d = 3, ...)
 */
-VBO& VAO::pushVBO(GLuint index, GLuint size, GLsizei stride) {
+VBO& VAO::pushVBO(GLuint vboIndex, GLuint vaoIndex, GLuint size, GLsizei stride, GLsizei offset) {
 	this->bind();
-	VBO& tmp = m_vbo[index];
+	VBO& tmp = m_vbo[vboIndex];
 	tmp.bind();
-	glVertexAttribPointer(index, size, GL_FLOAT, GL_FALSE, stride, (const void*)0);
-	glEnableVertexAttribArray(index);
+	glVertexAttribPointer(vaoIndex, size, GL_FLOAT, GL_FALSE, stride, (const void*)offset);
+	glEnableVertexAttribArray(vaoIndex);
 	this->unbind();
 	return tmp;
+}
+
+VBO& VAO::get_VBO(GLuint vboIndex) {
+	return m_vbo[vboIndex];
 }
 
 VAO::~VAO() {

@@ -3,7 +3,7 @@
 namespace air {
 
 	Shader::Shader() {
-		this->_inited = false;
+		this->m_inited = false;
 	}
 
 	Shader::Shader(const char* path, uint8_t usings) {
@@ -12,24 +12,24 @@ namespace air {
 
 	void Shader::use() {
 #ifdef AIR_DEBUG
-		if (!_inited) { AIR_LOG("Shader does not inited"); return; }
+		if (!m_inited) { AIR_LOG("Shader does not inited"); return; }
 #endif
-		glUseProgram(this->prog_id);
+		glUseProgram(this->m_progId);
 	}
 
 	void Shader::unuse() {
 		glUseProgram(0);
 	}
 
-	bool Shader::isInited() {
-		return _inited;
+	bool Shader::is_inited() {
+		return m_inited;
 	}
-	GLuint Shader::getId() {
-		return this->prog_id;
+	GLuint Shader::get_id() {
+		return this->m_progId;
 	}
 
 	void Shader::load_from_file(const char* path, uint8_t usings) {
-		this->prog_id = glCreateProgram();
+		this->m_progId = glCreateProgram();
 		std::ifstream of;
 		of.open(path);
 
@@ -78,22 +78,22 @@ namespace air {
 		AIR_LOG(info);
 #endif
 
-		glAttachShader(this->prog_id, vertex_id);
+		glAttachShader(this->m_progId, vertex_id);
 		if (usings == AIR_SHADER_VGF)
-			glAttachShader(this->prog_id, geometry_id);
-		glAttachShader(this->prog_id, fragment_id);
+			glAttachShader(this->m_progId, geometry_id);
+		glAttachShader(this->m_progId, fragment_id);
 
-		glLinkProgram(this->prog_id);
+		glLinkProgram(this->m_progId);
 
 		glDeleteShader(vertex_id);
 		glDeleteShader(geometry_id);
 		glDeleteShader(fragment_id);
 
-		this->_inited = true;
+		this->m_inited = true;
 	}
 
 	void Shader::load_from_string(const char* string, uint8_t usings) {
-		this->prog_id = glCreateProgram();
+		this->m_progId = glCreateProgram();
 		std::string curr;
 		int type = 0;
 		std::string vertex_source = "",
@@ -137,54 +137,54 @@ namespace air {
 		AIR_LOG(info);
 #endif
 
-		glAttachShader(this->prog_id, vertex_id);
+		glAttachShader(this->m_progId, vertex_id);
 		if (usings == AIR_SHADER_VGF)
-			glAttachShader(this->prog_id, geometry_id);
-		glAttachShader(this->prog_id, fragment_id);
+			glAttachShader(this->m_progId, geometry_id);
+		glAttachShader(this->m_progId, fragment_id);
 
-		glLinkProgram(this->prog_id);
+		glLinkProgram(this->m_progId);
 
 		glDeleteShader(vertex_id);
 		glDeleteShader(geometry_id);
 		glDeleteShader(fragment_id);
 
-		this->_inited = true;
+		this->m_inited = true;
 	}
 
 	GLuint Shader::_request_location(const char* path) {
 		GLuint loc;
-		if (locationsCache.find(path) != locationsCache.end())
-			loc = locationsCache[path];
-		else loc = locationsCache.insert(std::make_pair<std::string_view, GLuint>(path, glGetUniformLocation(this->prog_id, path))).first->second;
+		if (m_locationsCache.find(path) != m_locationsCache.end())
+			loc = m_locationsCache[path];
+		else loc = m_locationsCache.insert(std::make_pair<std::string_view, GLuint>(path, glGetUniformLocation(this->m_progId, path))).first->second;
 		return loc;
 	}
 
-	void Shader::setMatrix4f(glm::mat4 val, const char* path) {
+	void Shader::set_matrix4f(glm::mat4 val, const char* path) {
 		this->use();
 		glUniformMatrix4fv(_request_location(path), 1, GL_FALSE, glm::value_ptr(val));
 		this->unuse();
 	}
 
-	void Shader::setFloat(GLfloat val, const char* path) {
+	void Shader::set_float(GLfloat val, const char* path) {
 		this->use();
 		glUniform1f(_request_location(path), val);
 		this->unuse();
 	}
 
-	void Shader::setVector2f(glm::vec2 val, const char* path) {
+	void Shader::set_vector2f(glm::vec2 val, const char* path) {
 		this->use();
 		glUniform2f(_request_location(path), val.x, val.y);
 		this->unuse();
 	}
 
-	void Shader::setVector4f(glm::vec4 val, const char* path) {
+	void Shader::set_vector4f(glm::vec4 val, const char* path) {
 		this->use();
 		glUniform4f(_request_location(path), val.r, val.g, val.b, val.a);
 		this->unuse();
 	}
 
 	Shader::~Shader() {
-		glDeleteProgram(prog_id);
+		glDeleteProgram(m_progId);
 	}
 
 }

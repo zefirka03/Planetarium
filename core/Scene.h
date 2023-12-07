@@ -2,7 +2,8 @@
 #include "AirUtils.h"
 #include "ECS.h"
 
-#include <vector>
+#include <unordered_map>
+#include <typeindex>
 
 AIR_NAMESPACE_BEGIN
 
@@ -11,22 +12,34 @@ public:
     virtual void start() = 0;
     ~SceneBase();
 
-protected:
-    std::vector<System*> m_systems;
+    template<typename TSystem>
+    TSystem* get_system() {
+        return m_systems[typeid(TSystem)];
+    }
 
+protected:
+    std::unordered_map<std::type_index, System*> m_systems;
+
+    template<typename TSystem>
+    void _add_system() {
+        m_systems[typeid(TSystem)] = new TSystem();
+    }
 private:
     friend class Game;
+
     void _update_systems();
     void _start_systems();
 };
 
 
-template <typename... Systems>
+template<typename... Systems>
 class Scene : public SceneBase {
 public:
     Scene() {
-        (m_systems.emplace_back(new Systems()), ...);
+        (_add_system<Systems>(), ...);
     }
+private:
+    
 };
 
 AIR_NAMESPACE_END
