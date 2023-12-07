@@ -23,9 +23,9 @@ namespace air {
         void use();
         void unuse();
         // usings - AIR_SHADER_VF or AIR_SHADER_VGF (use VGF when you using geometry shader)
-        void loadFromFile(const char* path, uint8_t usings);
+        void load_from_file(const char* path, uint8_t usings);
         // usings - AIR_SHADER_VF or AIR_SHADER_VGF (use VGF when you using geometry shader)
-        void loadFromString(const char* string, uint8_t usings);
+        void load_from_string(const char* string, uint8_t usings);
         bool isInited();
         GLuint getId();
 
@@ -42,7 +42,7 @@ namespace air {
         GLuint prog_id = 0;
         bool _inited;
 
-        GLuint request_location(const char* path);
+        GLuint _request_location(const char* path);
     };
 
 }

@@ -7,7 +7,7 @@ namespace air {
 	}
 
 	Shader::Shader(const char* path, uint8_t usings) {
-		this->loadFromFile(path, usings);
+		this->load_from_file(path, usings);
 	}
 
 	void Shader::use() {
@@ -28,7 +28,7 @@ namespace air {
 		return this->prog_id;
 	}
 
-	void Shader::loadFromFile(const char* path, uint8_t usings) {
+	void Shader::load_from_file(const char* path, uint8_t usings) {
 		this->prog_id = glCreateProgram();
 		std::ifstream of;
 		of.open(path);
@@ -92,7 +92,7 @@ namespace air {
 		this->_inited = true;
 	}
 
-	void Shader::loadFromString(const char* string, uint8_t usings) {
+	void Shader::load_from_string(const char* string, uint8_t usings) {
 		this->prog_id = glCreateProgram();
 		std::string curr;
 		int type = 0;
@@ -151,35 +151,35 @@ namespace air {
 		this->_inited = true;
 	}
 
-	GLuint Shader::request_location(const char* path) {
+	GLuint Shader::_request_location(const char* path) {
 		GLuint loc;
 		if (locationsCache.find(path) != locationsCache.end())
 			loc = locationsCache[path];
-		else loc = locationsCache.insert({ path, glGetUniformLocation(this->prog_id, path) }).second;
+		else loc = locationsCache.insert(std::make_pair<std::string_view, GLuint>(path, glGetUniformLocation(this->prog_id, path))).first->second;
 		return loc;
 	}
 
 	void Shader::setMatrix4f(glm::mat4 val, const char* path) {
 		this->use();
-		glUniformMatrix4fv(request_location(path), 1, GL_FALSE, glm::value_ptr(val));
+		glUniformMatrix4fv(_request_location(path), 1, GL_FALSE, glm::value_ptr(val));
 		this->unuse();
 	}
 
 	void Shader::setFloat(GLfloat val, const char* path) {
 		this->use();
-		glUniform1f(glGetUniformLocation(request_location(path), path), val);
+		glUniform1f(_request_location(path), val);
 		this->unuse();
 	}
 
 	void Shader::setVector2f(glm::vec2 val, const char* path) {
 		this->use();
-		glUniform2f(glGetUniformLocation(request_location(path), path), val.x, val.y);
+		glUniform2f(_request_location(path), val.x, val.y);
 		this->unuse();
 	}
 
 	void Shader::setVector4f(glm::vec4 val, const char* path) {
 		this->use();
-		glUniform4f(glGetUniformLocation(request_location(path), path), val.r, val.g, val.b, val.a);
+		glUniform4f(_request_location(path), val.r, val.g, val.b, val.a);
 		this->unuse();
 	}
 

@@ -7,6 +7,8 @@ struct scene : public air::Scene<air::SRenderer2d> {
     void start() {
         air::P_Camera2d camera;
         air::P_Sprite sprite;
+
+        camera.get_component<air::C_Camera2d>().resize(1280, 720);
     };
 };
 

@@ -10,10 +10,10 @@ AIR_NAMESPACE_BEGIN
 class C_Camera2d : public Component {
 public:
 	C_Camera2d() {};
-	C_Camera2d(int width, int height);
+	C_Camera2d(float width, float height);
 	~C_Camera2d();
 
-	void resize(int width, int height);
+	void resize(float width, float height);
 	glm::mat4 get_projection();
 
 private:
