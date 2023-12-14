@@ -5,16 +5,23 @@
 
 
 struct scene : public air::Scene<air::SRenderer2d> {
-    void start() {
+    void start() override {
+        auto& TM = get_system<air::SRenderer2d>()->get_texture_manager();
+        TM.load_texture("images/tex.png", "tex");
+        printf("%d", (GLuint)*TM.get_texture("tex"));
+
         air::P_Camera2d camera;
-        for (int i = 0; i < 100; i++) {
-            air::P_Sprite sprite;
-            sprite.get_component<air::C_Transform>().set_position({ 10*i,10*i });
-        }
-
         camera.get_component<air::C_Camera2d>().resize(1280, 720);
-    };
 
+        for (int i = 0; i < 25; i++) {
+            for (int j = 0; j < 14; j++) {
+                air::P_Sprite sprite;
+                sprite.get_component<air::C_Sprite>().set_texture(TM.get_texture("tex"));
+                sprite.get_component<air::C_Sprite>().set_size({ 49, 49 });
+                sprite.get_component<air::C_Transform>().set_position({ 50 * i, 50 * j });
+            }
+        }
+    };
 };
 
 

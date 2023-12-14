@@ -1,6 +1,7 @@
 #pragma once
 #include "../core/AirCore.h"
 #include "Transform.h"
+#include "Texture.h"
 
 AIR_NAMESPACE_BEGIN
 
@@ -11,9 +12,15 @@ public:
 
 	void set_size(glm::vec2 size);
 	glm::vec2 get_size();
+	void set_texture(Texture* texture);
+	Texture* get_texture();
+	void set_texture_rect(glm::vec4 textureRect);
+	glm::vec4 get_texture_rect();
 
 private:
 	glm::vec2 m_size;
+	glm::vec4 m_textureRect;
+	Texture* m_texture = nullptr;
 };
 
 

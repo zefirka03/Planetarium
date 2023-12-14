@@ -14,7 +14,7 @@ public:
 
     template<typename TSystem>
     TSystem* get_system() {
-        return m_systems[typeid(TSystem)];
+        return (TSystem*)m_systems[typeid(TSystem)];
     }
 
 protected:

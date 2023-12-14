@@ -14,7 +14,7 @@ public:
 	~Game();
 
 	void run(SceneBase* scene);
-	Game* get_current_game();
+	static Game* get_current_game();
 	void go_to_scene(SceneBase* scene);
 private:
 	static Game* m_handler;

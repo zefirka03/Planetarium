@@ -11,7 +11,7 @@ C_Camera2d::~C_Camera2d() {}
 
 
 void C_Camera2d::resize(float width, float height) {
-	m_projection = glm::ortho(0.f, width, 0.f, height);
+	m_projection = glm::ortho(0.f, width, height, 0.f);
 }
 
 
