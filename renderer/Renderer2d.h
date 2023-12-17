@@ -17,18 +17,26 @@ public:
 		glm::vec3 color;
 	};
 
+	struct HostSpriteInstance {
+		GLuint tex_id;
+		SpriteInstance data;
+	};
+
 	Renderer2d();
 	~Renderer2d() {}
 	
-	void draw(SpriteInstance&& sprite, Texture* texture = nullptr);
+	void draw(HostSpriteInstance&& sprite);
 	void submit(C_Camera2d& camera);
 
 private:
 	friend class SRenderer2d;
-	std::unordered_map<GLuint, std::vector<SpriteInstance>> m_data;
+	std::unordered_map<GLuint, size_t> m_data_texture_pointer;
+	std::vector<HostSpriteInstance> m_data;
 	Shader m_shader;
 	VAO m_vao;
 	TextureManager m_textureManager;
+
+	size_t cur_iterator = 0;
 };
 
 

@@ -3,12 +3,13 @@
 AIR_NAMESPACE_BEGIN
 
 Renderer2d::Renderer2d() {
+	m_data = std::vector<HostSpriteInstance>(7*100000);
 	m_shader.load_from_string(
 	std::string({ R"(~~vertex~~
 #version 430 core
-layout(location = 0) in vec2 position;
-layout(location = 1) in vec2 texCoords;
-layout(location = 2) in vec3 color;
+layout(location = 1) in vec2 position;
+layout(location = 2) in vec2 texCoords;
+layout(location = 3) in vec3 color;
 
 uniform mat4 proj;
 out vec3 o_color;
@@ -37,36 +38,39 @@ void main() {
 )" }).c_str(),
 AIR_SHADER_VF);
 
-	m_vao.pushVBO(0, 0, 2, sizeof(SpriteInstance), 0 * sizeof(GLfloat)).buffer(nullptr, 0);
-	m_vao.pushVBO(0, 1, 2, sizeof(SpriteInstance), 2 * sizeof(GLfloat));
-	m_vao.pushVBO(0, 2, 3, sizeof(SpriteInstance), 4 * sizeof(GLfloat));
+	m_vao.pushVBO(0, 0, 1, sizeof(HostSpriteInstance), 0 * sizeof(GLfloat)).buffer(nullptr, 7*100000 * sizeof(HostSpriteInstance));
+	m_vao.pushVBO(0, 1, 2, sizeof(HostSpriteInstance), 1 * sizeof(GLfloat));
+	m_vao.pushVBO(0, 2, 2, sizeof(HostSpriteInstance), 3 * sizeof(GLfloat));
+	m_vao.pushVBO(0, 3, 3, sizeof(HostSpriteInstance), 5 * sizeof(GLfloat));
 }
 
 
-void Renderer2d::draw(SpriteInstance&& sprite, Texture* texture) {
-	if (!texture) {
-		m_data[0].emplace_back(sprite);
-	} else {
-		m_data[(GLuint)*texture].emplace_back(sprite);
-	}
+void Renderer2d::draw(HostSpriteInstance&& sprite) {
+	++m_data_texture_pointer[sprite.tex_id];
+	m_data[cur_iterator] = sprite;
+	++cur_iterator;
 }
 
 
 void Renderer2d::submit(C_Camera2d& camera) {
 	m_shader.set_matrix4f(camera.get_projection(), "proj");
-	for (auto sprites : m_data) {
-		if (sprites.first != 0)
-			glBindTexture(GL_TEXTURE_2D, sprites.first);
-		m_vao.get_VBO(0).buffer(sprites.second.data(), sprites.second.size() * sizeof(SpriteInstance));
+	std::sort(m_data.begin(), m_data.end(), [](HostSpriteInstance& a, HostSpriteInstance b) {
+		return a.tex_id > b.tex_id;
+	});
+	size_t it = 0;
+	for (auto sprites : m_data_texture_pointer) {
+		glBindTexture(GL_TEXTURE_2D, sprites.first);
+		m_vao.get_VBO(0).rebuffer(m_data.data(), it * sizeof(HostSpriteInstance), sprites.second * sizeof(HostSpriteInstance));
 		m_vao.bind();
 		m_shader.use();
-		glDrawArrays(GL_TRIANGLES, 0, sprites.second.size());
+		glDrawArrays(GL_TRIANGLES, 0, sprites.second);
 		m_shader.unuse();
 		m_vao.unbind();
 		glBindTexture(GL_TEXTURE_2D, 0);
+		it += sprites.second;
 	}
-
-	m_data.clear();
+	m_data_texture_pointer.clear();
+	cur_iterator = 0;
 }
 
 
@@ -91,12 +95,12 @@ void SRenderer2d::update() {
 		auto transform_size = sprite.get_size();
 		Texture* texture = sprite.get_texture();
 
-		m_renderer->draw({ {transform_pos.x, transform_pos.y}, {0.0, 0.0}, {1.0, 0.0, 1.0} }, texture);
-		m_renderer->draw({ {transform_pos.x+transform_size.x, transform_pos.y}, {1.0, 0.0}, {0.0, 1.0, 1.0} }, texture);
-		m_renderer->draw({ {transform_pos.x+transform_size.x, transform_pos.y+transform_size.y}, {1.0, 1.0}, {1.0, 1.0, 0.0} }, texture);
-		m_renderer->draw({ {transform_pos.x, transform_pos.y}, {0.0, 0.0}, {0.0, 1.0, 1.0} }, texture);
-		m_renderer->draw({ {transform_pos.x+transform_size.x, transform_pos.y+transform_size.y}, {1.0, 1.0}, {1.0, 1.0, 0.0} }, texture);
-		m_renderer->draw({ {transform_pos.x, transform_pos.y+transform_size.y}, {0.0, 1.0}, {1.0, 1.0, 0.0} }, texture);
+		m_renderer->draw({ (GLuint)*texture, {{transform_pos.x, transform_pos.y}, {0.0, 0.0}, {1.0, 0.0, 1.0} } });
+		m_renderer->draw({ (GLuint)*texture, {{transform_pos.x + transform_size.x, transform_pos.y}, {1.0, 0.0}, {0.0, 1.0, 1.0} } });
+		m_renderer->draw({ (GLuint)*texture, {{transform_pos.x + transform_size.x, transform_pos.y + transform_size.y}, {1.0, 1.0}, {1.0, 1.0, 0.0} } });
+		m_renderer->draw({ (GLuint)*texture, {{transform_pos.x, transform_pos.y}, {0.0, 0.0}, {0.0, 1.0, 1.0} } });
+		m_renderer->draw({ (GLuint)*texture, {{transform_pos.x + transform_size.x, transform_pos.y + transform_size.y}, {1.0, 1.0}, {1.0, 1.0, 0.0} } });
+		m_renderer->draw({ (GLuint)*texture, {{transform_pos.x, transform_pos.y + transform_size.y}, {0.0, 1.0}, {1.0, 1.0, 0.0}} });
 	});
 
 	m_renderer->submit(*active_camera);
