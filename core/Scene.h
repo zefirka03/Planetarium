@@ -27,8 +27,9 @@ protected:
 private:
     friend class Game;
 
-    void _update_systems();
     void _start_systems();
+    void _update_systems();
+    void _last_update_systems();
 };
 
 

@@ -33,7 +33,7 @@ void Game::run(SceneBase* scene) {
         glClear(GL_COLOR_BUFFER_BIT);
 
         scene->_update_systems();
-
+        scene->_last_update_systems();
         glfwSwapBuffers(m_window);
         glfwPollEvents();
     }
@@ -42,6 +42,11 @@ void Game::run(SceneBase* scene) {
 
 Game* Game::get_current_game() {
     return m_handler;
+}
+
+
+GLFWwindow* Game::get_glfw_window() {
+    return m_window;
 }
 
 

@@ -16,6 +16,7 @@ public:
 	void run(SceneBase* scene);
 	static Game* get_current_game();
 	void go_to_scene(SceneBase* scene);
+	GLFWwindow* get_glfw_window();
 private:
 	static Game* m_handler;
 	GLFWwindow* m_window = nullptr;

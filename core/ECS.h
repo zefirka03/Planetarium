@@ -69,6 +69,7 @@ class System {
 public:
 	virtual void start() = 0;
 	virtual void update() = 0;
+	virtual void last_update() {};
 	virtual ~System() {}
 };
 
