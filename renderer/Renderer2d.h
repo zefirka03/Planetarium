@@ -36,6 +36,7 @@ private:
 		uint64_t video_memory_allocated = 0;
 		uint64_t video_memory_use = 0;
 		uint16_t batch_count = 0;
+		uint64_t sprites_rendered = 0;
 	} m_render_stats;
 
 	std::unordered_map<GLuint, size_t> m_data_texture_pointer;

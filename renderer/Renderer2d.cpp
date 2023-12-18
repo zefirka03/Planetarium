@@ -54,9 +54,10 @@ void Renderer2d::draw(HostSpriteInstance&& sprite) {
 
 
 void Renderer2d::submit(C_Camera2d& camera) {
-	// reset stats
+	// reset render stats
 	m_render_stats.batch_count = m_data_texture_pointer.size();
 	m_render_stats.video_memory_use = m_cur_size * sizeof(HostSpriteInstance);
+	m_render_stats.sprites_rendered = m_cur_size / 6;
 
 	// render logic
 	m_shader.set_matrix4f(camera.get_projection(), "proj");
@@ -64,12 +65,13 @@ void Renderer2d::submit(C_Camera2d& camera) {
 		return a.tex_id > b.tex_id;
 	});
 	size_t it = 0;
+
+	m_vao.get_VBO(0).rebuffer(m_data.data(), 0, m_cur_size * sizeof(HostSpriteInstance));
 	for (auto sprites : m_data_texture_pointer) {
 		glBindTexture(GL_TEXTURE_2D, sprites.first);
-		m_vao.get_VBO(0).rebuffer(m_data.data(), it * sizeof(HostSpriteInstance), sprites.second * sizeof(HostSpriteInstance));
 		m_vao.bind();
 		m_shader.use();
-		glDrawArrays(GL_TRIANGLES, 0, sprites.second);
+		glDrawArrays(GL_TRIANGLES, it, sprites.second);
 		m_shader.unuse();
 		m_vao.unbind();
 		glBindTexture(GL_TEXTURE_2D, 0);
@@ -88,7 +90,7 @@ Renderer2d::RenderStats const& Renderer2d::get_stats() const {
 
 
 void SRenderer2d::start() {
-	AIR_LOG("RENDERER2d start");
+	AIR_LOG("RENDERER_2D start");
 }
 
 
