@@ -45,6 +45,11 @@ Game* Game::get_current_game() {
 }
 
 
+SceneBase* Game::get_current_scene() {
+    return m_current_scene;
+}
+
+
 GLFWwindow* Game::get_glfw_window() {
     return m_window;
 }

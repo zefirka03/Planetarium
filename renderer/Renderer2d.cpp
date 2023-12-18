@@ -2,14 +2,14 @@
 
 AIR_NAMESPACE_BEGIN
 
-Renderer2d::Renderer2d() {
-	m_data = std::vector<HostSpriteInstance>(7*100000);
+Renderer2d::Renderer2d(uint64_t max_sprites_count) {
+	m_data = std::vector<HostSpriteInstance>(max_sprites_count * 6);
 	m_shader.load_from_string(
 	std::string({ R"(~~vertex~~
 #version 430 core
-layout(location = 1) in vec2 position;
-layout(location = 2) in vec2 texCoords;
-layout(location = 3) in vec3 color;
+layout(location = 0) in vec2 position;
+layout(location = 1) in vec2 texCoords;
+layout(location = 2) in vec3 color;
 
 uniform mat4 proj;
 out vec3 o_color;
@@ -38,23 +38,29 @@ void main() {
 )" }).c_str(),
 AIR_SHADER_VF);
 
-	m_vao.pushVBO(0, 0, 1, sizeof(HostSpriteInstance), 0 * sizeof(GLfloat)).buffer(nullptr, 7*100000 * sizeof(HostSpriteInstance));
-	m_vao.pushVBO(0, 1, 2, sizeof(HostSpriteInstance), 1 * sizeof(GLfloat));
-	m_vao.pushVBO(0, 2, 2, sizeof(HostSpriteInstance), 3 * sizeof(GLfloat));
-	m_vao.pushVBO(0, 3, 3, sizeof(HostSpriteInstance), 5 * sizeof(GLfloat));
+	m_vao.pushVBO(0, 0, 2, sizeof(HostSpriteInstance), 0 * sizeof(GLfloat)).buffer(nullptr, max_sprites_count * 6 * sizeof(HostSpriteInstance));
+	m_vao.pushVBO(0, 1, 2, sizeof(HostSpriteInstance), 2 * sizeof(GLfloat));
+	m_vao.pushVBO(0, 2, 3, sizeof(HostSpriteInstance), 4 * sizeof(GLfloat));
+
+	m_render_stats.video_memory_allocated = max_sprites_count * 6 * sizeof(HostSpriteInstance);
 }
 
 
 void Renderer2d::draw(HostSpriteInstance&& sprite) {
 	++m_data_texture_pointer[sprite.tex_id];
-	m_data[cur_iterator] = sprite;
-	++cur_iterator;
+	m_data[m_cur_size] = sprite;
+	++m_cur_size;
 }
 
 
 void Renderer2d::submit(C_Camera2d& camera) {
+	// reset stats
+	m_render_stats.batch_count = m_data_texture_pointer.size();
+	m_render_stats.video_memory_use = m_cur_size * sizeof(HostSpriteInstance);
+
+	// render logic
 	m_shader.set_matrix4f(camera.get_projection(), "proj");
-	std::sort(m_data.begin(), m_data.end(), [](HostSpriteInstance& a, HostSpriteInstance b) {
+	std::sort(m_data.begin(), m_data.end(), [](HostSpriteInstance const& a, HostSpriteInstance const& b) {
 		return a.tex_id > b.tex_id;
 	});
 	size_t it = 0;
@@ -70,7 +76,11 @@ void Renderer2d::submit(C_Camera2d& camera) {
 		it += sprites.second;
 	}
 	m_data_texture_pointer.clear();
-	cur_iterator = 0;
+	m_cur_size = 0;
+}
+
+Renderer2d::RenderStats const& Renderer2d::get_stats() const {
+	return m_render_stats;
 }
 
 
@@ -95,12 +105,12 @@ void SRenderer2d::update() {
 		auto transform_size = sprite.get_size();
 		Texture* texture = sprite.get_texture();
 
-		m_renderer->draw({ (GLuint)*texture, {{transform_pos.x, transform_pos.y}, {0.0, 0.0}, {1.0, 0.0, 1.0} } });
-		m_renderer->draw({ (GLuint)*texture, {{transform_pos.x + transform_size.x, transform_pos.y}, {1.0, 0.0}, {0.0, 1.0, 1.0} } });
-		m_renderer->draw({ (GLuint)*texture, {{transform_pos.x + transform_size.x, transform_pos.y + transform_size.y}, {1.0, 1.0}, {1.0, 1.0, 0.0} } });
-		m_renderer->draw({ (GLuint)*texture, {{transform_pos.x, transform_pos.y}, {0.0, 0.0}, {0.0, 1.0, 1.0} } });
-		m_renderer->draw({ (GLuint)*texture, {{transform_pos.x + transform_size.x, transform_pos.y + transform_size.y}, {1.0, 1.0}, {1.0, 1.0, 0.0} } });
-		m_renderer->draw({ (GLuint)*texture, {{transform_pos.x, transform_pos.y + transform_size.y}, {0.0, 1.0}, {1.0, 1.0, 0.0}} });
+		m_renderer->draw({{{transform_pos.x, transform_pos.y}, {0.0, 0.0}, {1.0, 0.0, 1.0} }, (GLuint)*texture});
+		m_renderer->draw({{{transform_pos.x + transform_size.x, transform_pos.y}, {1.0, 0.0}, {0.0, 1.0, 1.0} } ,(GLuint)*texture});
+		m_renderer->draw({{{transform_pos.x + transform_size.x, transform_pos.y + transform_size.y}, {1.0, 1.0}, {1.0, 1.0, 0.0} }, (GLuint)*texture });
+		m_renderer->draw({{{transform_pos.x, transform_pos.y}, {0.0, 0.0}, {0.0, 1.0, 1.0} } , (GLuint)*texture });
+		m_renderer->draw({{{transform_pos.x + transform_size.x, transform_pos.y + transform_size.y}, {1.0, 1.0}, {1.0, 1.0, 0.0} },(GLuint)*texture });
+		m_renderer->draw({{{transform_pos.x, transform_pos.y + transform_size.y}, {0.0, 1.0}, {1.0, 1.0, 0.0}},(GLuint)*texture });
 	});
 
 	m_renderer->submit(*active_camera);
@@ -110,5 +120,11 @@ void SRenderer2d::update() {
 TextureManager& SRenderer2d::get_texture_manager() {
 	return m_renderer->m_textureManager;
 }
+
+
+Renderer2d::RenderStats const& SRenderer2d::get_stats() const {
+	return m_renderer->get_stats();
+}
+
 
 AIR_NAMESPACE_END

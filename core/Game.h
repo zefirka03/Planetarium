@@ -15,6 +15,7 @@ public:
 
 	void run(SceneBase* scene);
 	static Game* get_current_game();
+	SceneBase* get_current_scene();
 	void go_to_scene(SceneBase* scene);
 	GLFWwindow* get_glfw_window();
 private:

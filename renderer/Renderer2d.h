@@ -10,6 +10,7 @@
 AIR_NAMESPACE_BEGIN
 
 class Renderer2d {
+	struct RenderStats;
 public:
 	struct SpriteInstance {
 		glm::vec2 position;
@@ -18,25 +19,32 @@ public:
 	};
 
 	struct HostSpriteInstance {
-		GLuint tex_id;
 		SpriteInstance data;
+		GLuint tex_id;
 	};
 
-	Renderer2d();
+	Renderer2d(uint64_t max_sprites_count = 150000);
 	~Renderer2d() {}
 	
 	void draw(HostSpriteInstance&& sprite);
 	void submit(C_Camera2d& camera);
+	RenderStats const& get_stats() const;
 
 private:
 	friend class SRenderer2d;
+	struct RenderStats {
+		uint64_t video_memory_allocated = 0;
+		uint64_t video_memory_use = 0;
+		uint16_t batch_count = 0;
+	} m_render_stats;
+
 	std::unordered_map<GLuint, size_t> m_data_texture_pointer;
 	std::vector<HostSpriteInstance> m_data;
 	Shader m_shader;
 	VAO m_vao;
 	TextureManager m_textureManager;
 
-	size_t cur_iterator = 0;
+	size_t m_cur_size = 0;
 };
 
 
@@ -49,6 +57,7 @@ public:
 	void update() override;
 
 	TextureManager& get_texture_manager();
+	Renderer2d::RenderStats const& get_stats() const;
 private:
 	Renderer2d* m_renderer = nullptr;
 };

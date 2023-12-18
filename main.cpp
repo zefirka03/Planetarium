@@ -26,6 +26,11 @@ public:
     }
 
     void update() override {
+        auto renderer = air::Game::get_current_game()->get_current_scene()->get_system<air::SRenderer2d>();
+        auto& stats = renderer->get_stats();
+            
+        ++frame_count;
+        avg_fps += ImGui::GetIO().Framerate;
         ImGui_ImplOpenGL3_NewFrame();
         ImGui_ImplGlfw_NewFrame();
         ImGui::NewFrame();
@@ -33,6 +38,14 @@ public:
         {
             ImGui::Begin("Stats");
             ImGui::Text("FPS: %f", ImGui::GetIO().Framerate);
+            ImGui::Text("FPS AVRG: %f", avg_fps / frame_count);
+
+            ImGui::NewLine();
+
+            ImGui::Text("Batch count: %d", stats.batch_count);
+            ImGui::Text("Video memory allocated: %f MB", stats.video_memory_allocated / (1024.0 * 1024.0));
+            ImGui::Text("Video memory use: %f MB", stats.video_memory_use / (1024.0 * 1024.0));
+
             ImGui::End();
         }
     }
@@ -41,6 +54,9 @@ public:
         ImGui::Render();
         ImGui_ImplOpenGL3_RenderDrawData(ImGui::GetDrawData());
     }
+
+    float avg_fps = 0;
+    float frame_count = 0;
 };
 
 
@@ -53,12 +69,12 @@ struct scene : public air::Scene<air::SRenderer2d, SImgui> {
         air::P_Camera2d camera;
         camera.get_component<air::C_Camera2d>().resize(1280, 720);
 
-        for (int i = 0; i < 100; i++) {
-            for (int j = 0; j < 112; j++) {
+        for (int i = 0; i < 400; i++) {
+            for (int j = 0; j < 240; j++) {
                 air::P_Sprite sprite;
                 sprite.get_component<air::C_Sprite>().set_texture(TM.get_texture("tex"));
-                sprite.get_component<air::C_Sprite>().set_size({ 5, 5 });
-                sprite.get_component<air::C_Transform>().set_position({ 6 * i, 6 * j });
+                sprite.get_component<air::C_Sprite>().set_size({ 2, 2 });
+                sprite.get_component<air::C_Transform>().set_position({ 3 * i, 3 * j });
             }
         }
     };
