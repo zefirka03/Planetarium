@@ -89,12 +89,12 @@ Renderer2d::RenderStats const& Renderer2d::get_stats() const {
 /////////////////////////
 
 
-void SRenderer2d::start() {
+void S_Renderer2d::start() {
 	AIR_LOG("RENDERER_2D start");
 }
 
 
-void SRenderer2d::update() {
+void S_Renderer2d::update() {
 	auto& reg = ECS::registry;
 
 	C_Camera2d* active_camera = nullptr;
@@ -119,12 +119,12 @@ void SRenderer2d::update() {
 }
 
 
-TextureManager& SRenderer2d::get_texture_manager() {
+TextureManager& S_Renderer2d::get_texture_manager() {
 	return m_renderer->m_textureManager;
 }
 
 
-Renderer2d::RenderStats const& SRenderer2d::get_stats() const {
+Renderer2d::RenderStats const& S_Renderer2d::get_stats() const {
 	return m_renderer->get_stats();
 }
 

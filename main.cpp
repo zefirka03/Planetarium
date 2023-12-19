@@ -8,7 +8,7 @@
 #include "imgui/imgui_impl_opengl3.h"
 
 
-class SImgui : public air::System {
+class S_Imgui : public air::System {
 public:
     void start() override {
         const char* glsl_version = "#version 130";
@@ -26,7 +26,7 @@ public:
     }
 
     void update() override {
-        auto renderer = air::Game::get_current_game()->get_current_scene()->get_system<air::SRenderer2d>();
+        auto renderer = air::Game::get_current_game()->get_current_scene()->get_system<air::S_Renderer2d>();
         auto& stats = renderer->get_stats();
             
         ++frame_count;
@@ -43,8 +43,9 @@ public:
             ImGui::NewLine();
 
             ImGui::Text("Batch count: %d", stats.batch_count);
-            ImGui::Text("Video memory allocated: %f MB", stats.video_memory_allocated / (1024.0 * 1024.0));
-            ImGui::Text("Video memory use: %f MB", stats.video_memory_use / (1024.0 * 1024.0));
+            ImGui::Text("Video memory allocated: %.2f MB", stats.video_memory_allocated / (1024.0 * 1024.0));
+            ImGui::Text("Video memory use: %.2f MB", stats.video_memory_use / (1024.0 * 1024.0));
+            ImGui::Text("Sprites rendered: %d", stats.sprites_rendered);
 
             ImGui::End();
         }
@@ -60,21 +61,32 @@ public:
 };
 
 
-struct scene : public air::Scene<air::SRenderer2d, SImgui> {
+struct scene : public air::Scene<air::S_Renderer2d, S_Imgui> {
     void start() override {
-        auto& TM = get_system<air::SRenderer2d>()->get_texture_manager();
+        auto& TM = get_system<air::S_Renderer2d>()->get_texture_manager();
         TM.load_texture("images/tex.png", "tex");
+        TM.load_texture("images/ff.png", "ff");
         printf("%d", (GLuint)*TM.get_texture("tex"));
 
         air::P_Camera2d camera;
-        camera.get_component<air::C_Camera2d>().resize(1280, 720);
+        camera.get_component<air::C_Camera2d>().resize(1920, 1080);
+        
 
-        for (int i = 0; i < 400; i++) {
-            for (int j = 0; j < 240; j++) {
+        for (int i = 0; i < 240; i++) {
+            for (int j = 0; j < 54; j++) {
                 air::P_Sprite sprite;
                 sprite.get_component<air::C_Sprite>().set_texture(TM.get_texture("tex"));
-                sprite.get_component<air::C_Sprite>().set_size({ 2, 2 });
-                sprite.get_component<air::C_Transform>().set_position({ 3 * i, 3 * j });
+                sprite.get_component<air::C_Sprite>().set_size({ 7, 7 });
+                sprite.get_component<air::C_Transform>().set_position({ 8 * i, 8 * j });
+            }
+        }
+
+        for (int i = 0; i < 240; i++) {
+            for (int j = 0; j < 54; j++) {
+                air::P_Sprite sprite;
+                sprite.get_component<air::C_Sprite>().set_texture(TM.get_texture("ff"));
+                sprite.get_component<air::C_Sprite>().set_size({ 7, 7 });
+                sprite.get_component<air::C_Transform>().set_position({ 8 * i, 8 * 54 + 8 * j });
             }
         }
     };
@@ -82,7 +94,7 @@ struct scene : public air::Scene<air::SRenderer2d, SImgui> {
 
 
 int main(){
-    air::Game game(1280, 720, "App");
+    air::Game game(1920, 1080, "App");
     game.run(new scene());
     
     return 0;

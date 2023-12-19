@@ -31,7 +31,7 @@ public:
 	RenderStats const& get_stats() const;
 
 private:
-	friend class SRenderer2d;
+	friend class S_Renderer2d;
 	struct RenderStats {
 		uint64_t video_memory_allocated = 0;
 		uint64_t video_memory_use = 0;
@@ -49,10 +49,10 @@ private:
 };
 
 
-class SRenderer2d : public System {
+class S_Renderer2d : public System {
 public:
-	SRenderer2d() { m_renderer = new Renderer2d(); };
-	~SRenderer2d() {};
+	S_Renderer2d() { m_renderer = new Renderer2d(); };
+	~S_Renderer2d() {};
 
 	void start() override;
 	void update() override;
