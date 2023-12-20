@@ -61,7 +61,7 @@ public:
 };
 
 
-struct scene : public air::Scene<air::S_Renderer2d, S_Imgui> {
+struct scene : public air::Scene<S_Imgui, air::S_Renderer2d> {
     void start() override {
         auto& TM = get_system<air::S_Renderer2d>()->get_texture_manager();
         TM.load_texture("images/tex.png", "tex");
