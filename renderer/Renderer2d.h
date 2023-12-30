@@ -12,23 +12,11 @@ AIR_NAMESPACE_BEGIN
 class Renderer2d {
 	struct RenderStats;
 public:
-	struct SpriteInstance {
-		struct Vertex {
-			glm::vec2 position;
-			glm::vec2 texCoords;
-			glm::vec3 color;
-		} verteces[6];
-	};
-
-	struct HostSpriteInstance {
-		SpriteInstance data;
-		GLuint tex_id;
-	};
-
 	Renderer2d(uint64_t max_sprites_count = 150000);
 	~Renderer2d() {}
 	
 	void draw(HostSpriteInstance&& sprite);
+	void draw(HostSpriteInstance const& sprite);
 	void submit(C_Camera2d& camera);
 	RenderStats const& get_stats() const;
 

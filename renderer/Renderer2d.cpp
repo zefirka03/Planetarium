@@ -48,8 +48,13 @@ AIR_SHADER_VF);
 
 void Renderer2d::draw(HostSpriteInstance&& sprite) {
 	++m_data_texture_pointer[sprite.tex_id];
-	m_data[m_cur_size] = sprite.data;
-	++m_cur_size;
+	m_data[m_cur_size++] = sprite.data;
+}
+
+
+void Renderer2d::draw(HostSpriteInstance const& sprite) {
+	++m_data_texture_pointer[sprite.tex_id];
+	m_data[m_cur_size++] = sprite.data;
 }
 
 
@@ -105,19 +110,7 @@ void S_Renderer2d::update() {
 	});
 
 	reg.view<C_Sprite>().each([&](C_Sprite& sprite) {
-		auto transform_pos = sprite.get_entity().get_component<C_Transform>().get_position();
-		auto transform_size = sprite.get_size();
-		Texture* texture = sprite.get_texture();
-
-		m_renderer->draw({ {
-						 {{{transform_pos.x, transform_pos.y}, {0.0, 0.0}, {1.0, 0.0, 1.0} },
-						  {{transform_pos.x + transform_size.x, transform_pos.y}, {1.0, 0.0}, {0.0, 1.0, 1.0} } ,
-						  {{transform_pos.x + transform_size.x, transform_pos.y + transform_size.y}, {1.0, 1.0}, {1.0, 1.0, 0.0} },
-						  {{transform_pos.x, transform_pos.y}, {0.0, 0.0}, {0.0, 1.0, 1.0} } ,
-						  {{transform_pos.x + transform_size.x, transform_pos.y + transform_size.y}, {1.0, 1.0}, {1.0, 1.0, 0.0} },
-						  {{transform_pos.x, transform_pos.y + transform_size.y}, {0.0, 1.0}, {1.0, 1.0, 0.0}}}
-
-			}, (GLuint)*texture });
+		m_renderer->draw(sprite.get_instance());
 	});
 
 	m_renderer->submit(*active_camera);
