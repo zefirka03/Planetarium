@@ -13,9 +13,11 @@ class Renderer2d {
 	struct RenderStats;
 public:
 	struct SpriteInstance {
-		glm::vec2 position;
-		glm::vec2 texCoords;
-		glm::vec3 color;
+		struct Vertex {
+			glm::vec2 position;
+			glm::vec2 texCoords;
+			glm::vec3 color;
+		} verteces[6];
 	};
 
 	struct HostSpriteInstance {
@@ -35,12 +37,12 @@ private:
 	struct RenderStats {
 		uint64_t video_memory_allocated = 0;
 		uint64_t video_memory_use = 0;
-		uint16_t batch_count = 0;
 		uint64_t sprites_rendered = 0;
+		uint16_t batch_count = 0;
 	} m_render_stats;
 
 	std::unordered_map<GLuint, size_t> m_data_texture_pointer;
-	std::vector<HostSpriteInstance> m_data;
+	std::vector<SpriteInstance> m_data;
 	Shader m_shader;
 	VAO m_vao;
 	TextureManager m_textureManager;

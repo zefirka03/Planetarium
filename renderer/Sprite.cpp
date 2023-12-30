@@ -17,7 +17,7 @@ void C_Sprite::set_texture(Texture* texture) {
 }
 
 
-Texture* C_Sprite::get_texture() {
+Texture* const C_Sprite::get_texture() const {
 	return m_texture;
 }
 

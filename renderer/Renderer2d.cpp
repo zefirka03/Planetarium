@@ -3,7 +3,7 @@
 AIR_NAMESPACE_BEGIN
 
 Renderer2d::Renderer2d(uint64_t max_sprites_count) {
-	m_data = std::vector<HostSpriteInstance>(max_sprites_count * 6);
+	m_data = std::vector<SpriteInstance>(max_sprites_count);
 	m_shader.load_from_string(
 	std::string({ R"(~~vertex~~
 #version 430 core
@@ -38,17 +38,17 @@ void main() {
 )" }).c_str(),
 AIR_SHADER_VF);
 
-	m_vao.pushVBO(0, 0, 2, sizeof(HostSpriteInstance), 0 * sizeof(GLfloat)).buffer(nullptr, max_sprites_count * 6 * sizeof(HostSpriteInstance));
-	m_vao.pushVBO(0, 1, 2, sizeof(HostSpriteInstance), 2 * sizeof(GLfloat));
-	m_vao.pushVBO(0, 2, 3, sizeof(HostSpriteInstance), 4 * sizeof(GLfloat));
+	m_vao.pushVBO(0, 0, 2, sizeof(SpriteInstance::Vertex), 0 * sizeof(GLfloat)).buffer(nullptr, max_sprites_count * sizeof(SpriteInstance));
+	m_vao.pushVBO(0, 1, 2, sizeof(SpriteInstance::Vertex), 2 * sizeof(GLfloat));
+	m_vao.pushVBO(0, 2, 3, sizeof(SpriteInstance::Vertex), 4 * sizeof(GLfloat));
 
-	m_render_stats.video_memory_allocated = max_sprites_count * 6 * sizeof(HostSpriteInstance);
+	m_render_stats.video_memory_allocated = max_sprites_count * sizeof(SpriteInstance);
 }
 
 
 void Renderer2d::draw(HostSpriteInstance&& sprite) {
 	++m_data_texture_pointer[sprite.tex_id];
-	m_data[m_cur_size] = sprite;
+	m_data[m_cur_size] = sprite.data;
 	++m_cur_size;
 }
 
@@ -56,22 +56,20 @@ void Renderer2d::draw(HostSpriteInstance&& sprite) {
 void Renderer2d::submit(C_Camera2d& camera) {
 	// reset render stats
 	m_render_stats.batch_count = m_data_texture_pointer.size();
-	m_render_stats.video_memory_use = m_cur_size * sizeof(HostSpriteInstance);
-	m_render_stats.sprites_rendered = m_cur_size / 6;
+	m_render_stats.video_memory_use = m_cur_size * sizeof(SpriteInstance);
+	m_render_stats.sprites_rendered = m_cur_size;
 
 	// render logic
 	m_shader.set_matrix4f(camera.get_projection(), "proj");
-	std::sort(m_data.begin(), m_data.end(), [](HostSpriteInstance const& a, HostSpriteInstance const& b) {
-		return a.tex_id > b.tex_id;
-	});
+
 	size_t it = 0;
 
-	m_vao.get_VBO(0).rebuffer(m_data.data(), 0, m_cur_size * sizeof(HostSpriteInstance));
+	m_vao.get_VBO(0).rebuffer(m_data.data(), 0, m_cur_size * sizeof(SpriteInstance));
 	for (auto sprites : m_data_texture_pointer) {
 		glBindTexture(GL_TEXTURE_2D, sprites.first);
 		m_vao.bind();
 		m_shader.use();
-		glDrawArrays(GL_TRIANGLES, it, sprites.second);
+		glDrawArrays(GL_TRIANGLES, it*6, sprites.second * 6);
 		m_shader.unuse();
 		m_vao.unbind();
 		glBindTexture(GL_TEXTURE_2D, 0);
@@ -102,17 +100,24 @@ void S_Renderer2d::update() {
 		active_camera = &camera;
 	});
 
+	reg.sort<C_Sprite>([](const auto& lhs, const auto& ths) {
+		return (GLuint)*lhs.get_texture() < (GLuint)*ths.get_texture();
+	});
+
 	reg.view<C_Sprite>().each([&](C_Sprite& sprite) {
 		auto transform_pos = sprite.get_entity().get_component<C_Transform>().get_position();
 		auto transform_size = sprite.get_size();
 		Texture* texture = sprite.get_texture();
 
-		m_renderer->draw({{{transform_pos.x, transform_pos.y}, {0.0, 0.0}, {1.0, 0.0, 1.0} }, (GLuint)*texture});
-		m_renderer->draw({{{transform_pos.x + transform_size.x, transform_pos.y}, {1.0, 0.0}, {0.0, 1.0, 1.0} } ,(GLuint)*texture});
-		m_renderer->draw({{{transform_pos.x + transform_size.x, transform_pos.y + transform_size.y}, {1.0, 1.0}, {1.0, 1.0, 0.0} }, (GLuint)*texture });
-		m_renderer->draw({{{transform_pos.x, transform_pos.y}, {0.0, 0.0}, {0.0, 1.0, 1.0} } , (GLuint)*texture });
-		m_renderer->draw({{{transform_pos.x + transform_size.x, transform_pos.y + transform_size.y}, {1.0, 1.0}, {1.0, 1.0, 0.0} },(GLuint)*texture });
-		m_renderer->draw({{{transform_pos.x, transform_pos.y + transform_size.y}, {0.0, 1.0}, {1.0, 1.0, 0.0}},(GLuint)*texture });
+		m_renderer->draw({ {
+						 {{{transform_pos.x, transform_pos.y}, {0.0, 0.0}, {1.0, 0.0, 1.0} },
+						  {{transform_pos.x + transform_size.x, transform_pos.y}, {1.0, 0.0}, {0.0, 1.0, 1.0} } ,
+						  {{transform_pos.x + transform_size.x, transform_pos.y + transform_size.y}, {1.0, 1.0}, {1.0, 1.0, 0.0} },
+						  {{transform_pos.x, transform_pos.y}, {0.0, 0.0}, {0.0, 1.0, 1.0} } ,
+						  {{transform_pos.x + transform_size.x, transform_pos.y + transform_size.y}, {1.0, 1.0}, {1.0, 1.0, 0.0} },
+						  {{transform_pos.x, transform_pos.y + transform_size.y}, {0.0, 1.0}, {1.0, 1.0, 0.0}}}
+
+			}, (GLuint)*texture });
 	});
 
 	m_renderer->submit(*active_camera);

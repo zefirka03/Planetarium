@@ -75,7 +75,7 @@ struct scene : public air::Scene<S_Imgui, air::S_Renderer2d> {
         for (int i = 0; i < 240; i++) {
             for (int j = 0; j < 54; j++) {
                 air::P_Sprite sprite;
-                sprite.get_component<air::C_Sprite>().set_texture(TM.get_texture("tex"));
+                sprite.get_component<air::C_Sprite>().set_texture(TM.get_texture("ff"));
                 sprite.get_component<air::C_Sprite>().set_size({ 7, 7 });
                 sprite.get_component<air::C_Transform>().set_position({ 8 * i, 8 * j });
             }
@@ -84,7 +84,7 @@ struct scene : public air::Scene<S_Imgui, air::S_Renderer2d> {
         for (int i = 0; i < 240; i++) {
             for (int j = 0; j < 54; j++) {
                 air::P_Sprite sprite;
-                sprite.get_component<air::C_Sprite>().set_texture(TM.get_texture("ff"));
+                sprite.get_component<air::C_Sprite>().set_texture(TM.get_texture("tex"));
                 sprite.get_component<air::C_Sprite>().set_size({ 7, 7 });
                 sprite.get_component<air::C_Transform>().set_position({ 8 * i, 8 * 54 + 8 * j });
             }

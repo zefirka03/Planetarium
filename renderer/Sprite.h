@@ -13,7 +13,7 @@ public:
 	void set_size(glm::vec2 size);
 	glm::vec2 get_size();
 	void set_texture(Texture* texture);
-	Texture* get_texture();
+	Texture* const get_texture() const;
 	void set_texture_rect(glm::vec4 textureRect);
 	glm::vec4 get_texture_rect();
 
