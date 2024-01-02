@@ -68,13 +68,12 @@ void Renderer2d::submit(C_Camera2d& camera) {
 	m_shader.set_matrix4f(camera.get_projection(), "proj");
 
 	size_t it = 0;
-
 	m_vao.get_VBO(0).rebuffer(m_data.data(), 0, m_cur_size * sizeof(SpriteInstance));
 	for (auto sprites : m_data_texture_pointer) {
 		glBindTexture(GL_TEXTURE_2D, sprites.first);
 		m_vao.bind();
 		m_shader.use();
-		glDrawArrays(GL_TRIANGLES, it*6, sprites.second * 6);
+		glDrawArrays(GL_TRIANGLES, it * 6, sprites.second * 6);
 		m_shader.unuse();
 		m_vao.unbind();
 		glBindTexture(GL_TEXTURE_2D, 0);
